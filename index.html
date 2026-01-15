@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Tasks</title>
-  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -10,6 +10,10 @@
   <div id="serverScreen" class="login">
     <h2>Connect to Server</h2>
     <p style="color: #666; margin-bottom: 20px;">Enter the server address to connect</p>
+    
+    <div id="protocolWarning" class="warning-box" style="display: none;">
+      <strong>⚠️ HTTPS Mode:</strong> This page is loaded over HTTPS. You must connect to an HTTPS server or your browser will block the connection (Mixed Content Policy).
+    </div>
     
     <div class="form-group">
       <label for="serverAddress">Server Address</label>

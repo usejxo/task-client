@@ -18,6 +18,12 @@ window.addEventListener('DOMContentLoaded', () => {
   const savedUserId = localStorage.getItem('userId');
   const savedUsername = localStorage.getItem('username');
   
+  // Check if page is loaded over HTTPS
+  if (window.location.protocol === 'https:') {
+    document.getElementById('useHttps').checked = true;
+    showProtocolWarning();
+  }
+  
   if (savedServer) {
     // Auto-connect to saved server
     const protocol = savedHttps ? 'https://' : 'http://';
@@ -46,6 +52,14 @@ window.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Enter') login();
   });
 });
+
+// Show protocol warning if page is HTTPS
+function showProtocolWarning() {
+  const warningDiv = document.getElementById('protocolWarning');
+  if (warningDiv && window.location.protocol === 'https:') {
+    warningDiv.style.display = 'block';
+  }
+}
 
 // Load recent servers
 function loadRecentServers() {
@@ -90,6 +104,14 @@ async function connectToServer() {
     return;
   }
   
+  // Check for mixed content issue
+  if (window.location.protocol === 'https:' && !useHttps) {
+    document.getElementById('serverError').innerHTML = 
+      '⚠️ <strong>Mixed Content Error:</strong> This page is loaded over HTTPS, but you\'re trying to connect to an HTTP server. ' +
+      'Please either:<br>1. Enable "Use HTTPS" checkbox above, or<br>2. Access this page via HTTP instead (e.g., open the HTML file locally or use http:// hosting)';
+    return;
+  }
+  
   const protocol = useHttps ? 'https://' : 'http://';
   serverUrl = protocol + address;
   
@@ -115,7 +137,19 @@ async function connectToServer() {
     document.getElementById('serverError').textContent = '';
     
   } catch (err) {
-    document.getElementById('serverError').textContent = 'Unable to connect to server. Please check the address.';
+    console.error('Connection error:', err);
+    let errorMsg = 'Unable to connect to server. ';
+    
+    if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+      errorMsg += 'Please check:<br>• Server address is correct<br>• Server is running<br>• No firewall is blocking the connection';
+      if (window.location.protocol === 'https:' && !useHttps) {
+        errorMsg += '<br>• Try enabling "Use HTTPS" or access this page via HTTP';
+      }
+    } else {
+      errorMsg += err.message;
+    }
+    
+    document.getElementById('serverError').innerHTML = errorMsg;
   }
 }
 
