@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tasks</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Server Selection Screen -->
+  <div id="serverScreen" class="login">
+    <h2>Connect to Server</h2>
+    <p style="color: #666; margin-bottom: 20px;">Enter the server address to connect</p>
+    
+    <div class="form-group">
+      <label for="serverAddress">Server Address</label>
+      <input type="text" id="serverAddress" placeholder="localhost:3000 or example.com:3000">
+      <small>Enter server address with port (e.g., 192.168.1.100:3000)</small>
+    </div>
+    
+    <div class="form-group">
+      <input type="checkbox" id="useHttps" style="width: auto; margin-right: 8px;">
+      <label for="useHttps" style="display: inline;">Use HTTPS</label>
+    </div>
+    
+    <div id="recentServers" style="display: none; margin: 15px 0;">
+      <h4 style="font-size: 14px; color: #666; margin-bottom: 10px;">Recent Servers:</h4>
+      <div id="recentServersList"></div>
+    </div>
+    
+    <button onclick="connectToServer()">Connect to Server</button>
+    <div id="serverError" class="error"></div>
+  </div>
+  
+  <!-- Login Screen -->
+  <div id="loginScreen" class="login" style="display:none;">
+    <h2>Welcome to Task Manager</h2>
+    <p style="color: #666; margin-bottom: 10px;">Connected to: <strong id="connectedServer"></strong></p>
+    <p style="color: #666; margin-bottom: 20px;">Enter your username to get started</p>
+    <input type="text" id="username" placeholder="Username" maxlength="20">
+    <button onclick="login()">Login</button>
+    <button onclick="changeServer()" class="secondary" style="margin-top: 10px;">Change Server</button>
+    <div id="loginError" class="error"></div>
+  </div>
+  
+  <!-- Main Screen -->
+  <div id="mainScreen" style="display:none;">
+    <div class="header">
+      <div>
+        <h1>Task Manager</h1>
+        <p id="welcomeText"></p>
+        <p style="font-size: 12px; opacity: 0.8;" id="serverInfo"></p>
+      </div>
+      <div class="header-right">
+        <div class="header-points" id="headerPoints" style="display:none;">
+          Points: <strong id="userPointsHeader">0</strong>
+        </div>
+        <button onclick="changeServer()" class="secondary" style="padding: 8px 16px; margin-left: 15px;">Change Server</button>
+      </div>
+    </div>
+    
+    <!-- Main Container -->
+    <div class="container">
+      <div class="sidebar">
+        <div class="sidebar-nav">
+          <button class="active" onclick="showView('tasks')">Tasks</button>
+          <button id="shopNavBtn" onclick="showView('shop')">Shop</button>
+          <button id="inventoryNavBtn" onclick="showView('inventory')">Inventory</button>
+          <button id="gamesNavBtn" onclick="showView('games')">Games</button>
+          <button id="chatNavBtn" onclick="showView('chat')">Chat</button>
+        </div>
+      </div>
+      
+      <div class="main-content">
+        <div id="tasksView" class="view-content">
+          <div class="task-grid" id="taskGrid"></div>
+          <div class="empty-state" id="emptyState" style="display:none;">
+            <h3>No tasks available</h3>
+            <p>Check back later for new tasks!</p>
+          </div>
+        </div>
+        
+        <div id="shopView" class="view-content" style="display:none;">
+          <h2>Prize Shop</h2>
+          <div class="shop-grid" id="shopGrid"></div>
+        </div>
+        
+        <div id="inventoryView" class="view-content" style="display:none;">
+          <h2>My Inventory</h2>
+          <div class="inventory-grid" id="inventoryGrid"></div>
+        </div>
+        
+        <div id="chatView" class="view-content" style="display:none;">
+          <div class="chat-view">
+            <h2>Chat</h2>
+            <div class="chat-messages" id="chatMessagesView"></div>
+            <div class="chat-input-area">
+              <input type="text" id="chatInputView" placeholder="Type message...">
+              <button onclick="sendMessageView()">Send</button>
+            </div>
+          </div>
+        </div>
+        
+        <div id="gamesView" class="view-content" style="display:none;">
+          <h2>Games & Sites</h2>
+          <div class="shop-grid" id="gamesGrid"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Chat Box (floating) -->
+    <div class="chat minimized" id="chatBox" style="display:none;">
+      <div class="chat-header" onclick="toggleChat()">
+        <span>Chat</span>
+        <span id="chatToggle">▼</span>
+      </div>
+      <div class="chat-body">
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-area">
+          <input type="text" id="chatInput" placeholder="Type message...">
+          <button onclick="sendMessage()">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Task Modal -->
+  <div id="taskModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle"></h2>
+        <span class="close" onclick="closeModal()">&times;</span>
+      </div>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+  
+  <!-- Shop Modal -->
+  <div id="shopModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Prize Shop</h2>
+        <span class="close" onclick="closeShopModal()">&times;</span>
+      </div>
+      <div class="shop-grid" id="shopGridModal"></div>
+    </div>
+  </div>
+  
+  <!-- Inventory Modal -->
+  <div id="inventoryModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>My Inventory</h2>
+        <span class="close" onclick="closeInventoryModal()">&times;</span>
+      </div>
+      <div class="inventory-grid" id="inventoryGridModal"></div>
+    </div>
+  </div>
+  
+  <script src="app.js"></script>
+  <script src="tasks.js"></script>
+</body>
+</html>
