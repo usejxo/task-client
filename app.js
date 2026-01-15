@@ -18,6 +18,11 @@ window.addEventListener('DOMContentLoaded', () => {
   const savedUserId = localStorage.getItem('userId');
   const savedUsername = localStorage.getItem('username');
   
+  // Hide all screens initially
+  document.getElementById('serverScreen').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('mainScreen').style.display = 'none';
+  
   // Check if page is loaded over HTTPS
   if (window.location.protocol === 'https:') {
     document.getElementById('useHttps').checked = true;
